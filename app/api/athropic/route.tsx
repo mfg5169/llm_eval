@@ -1,13 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
 import dotenv from 'dotenv'
+
 // POST request handler
 export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();  // Parse the request body
     
     // Fetch the API key from environment variables
-    const apiKey = process.env.DATABASE_URL;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
       return new Response(

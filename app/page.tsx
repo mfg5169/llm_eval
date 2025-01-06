@@ -1,8 +1,9 @@
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import CustomForm from "./_components/CustomForm";
-
+"use client"
+import CustomForm from "./_components/_customform/CustomForm";
+import TopHeader from "./_components/_topheader/TopHeader";
+import SideBar from "./_components/_sidebar/SideBar";
+import { useState } from "react";
+import NewProjectOverlay from "./_components/_projectoverlay/NewProjectOverlay";
 export default function Home() {
 
   // const [responses, setResponses] = useState([]);
@@ -20,11 +21,34 @@ export default function Home() {
   //   }
   // };
 
-  console.log(process.env.NEXT_GEMINI_API_KEY)
+    const [isOverlayVisible, setOverlayVisible] = useState(false);
+    const [activeTab, setActiveTab] = useState<string>('');
+    
+  
   return (
     <div>
-      <CustomForm></CustomForm>
+      <div  className={`${isOverlayVisible ? 'blur-sm' : ''} transition-filter duration-300 flex flex-col`} >
+        <div className="h-[10vh]">
+          <TopHeader/>
+        </div>
+        
+        <div className={`flex-1 flex h-[90vh] ${isOverlayVisible ? 'pointer-events-none' : ''}`}>
+          {/* <Sidebar/> */}
+          
+          <SideBar
+          setOverlayVisible={setOverlayVisible}
+          setActiveTab={setActiveTab}
+          activeTab={activeTab}/>
+          <CustomForm
+          Tab={activeTab}/>
 
+        </div>
+
+      </div>
+      {isOverlayVisible && (
+       <NewProjectOverlay setOverlayVisible={setOverlayVisible}/>
+      )}
     </div>
+
   );
 }
