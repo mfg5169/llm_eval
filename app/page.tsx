@@ -46,7 +46,7 @@ export default function Home() {
 
       </div>
       {isOverlayVisible && (
-       <NewProjectOverlay setOverlayVisible={setOverlayVisible}/>
+       <NewProjectOverlay setOverlayVisible={setOverlayVisible} setActiveTab={setActiveTab}/>
       )}
     </div>
 

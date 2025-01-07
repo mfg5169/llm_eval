@@ -8,26 +8,35 @@ import { model } from '../../utils/gemini';//rcfe
 import { create_message, anthropic } from '../../utils/claude';
 import { attachReactRefresh } from 'next/dist/build/webpack-config';
 import Conversation from './Conversation';
+import { Activity } from 'lucide-react';
 
 function CustomForm({Tab}: {Tab:string}) {
 
-    console.log(JSON.parse(localStorage.getItem(Tab)|| "[]"))
+    const models = JSON.parse(localStorage.getItem(Tab)|| "[]")
+    console.log(models)
     const [FormData, setData] = useState<any>('');
+    
+    const [ActiveModel, setActiveModel] = useState<string>('')
     const [convo, setConvo] = useState<{ prompt: any; response: any }[]>([]);
     const CallAPI=async(data: any) => {
+        console.log("ACTIVE: " + ActiveModel)
+
+        if(!ActiveModel){
+          console.error("Error finding Active Model");
+        }
         try {
-            const res = await fetch("/api/ath", {
-              method: "GET", //change to post 
+            const res = await fetch("/api/resp/" + ActiveModel  , {
+              method: "POST", //change to post 
               headers: {
                 "Content-Type": "application/json",
-              }//,
-              //body: JSON.stringify({ prompt }), // Send prompt as JSON
+              },
+              body: JSON.stringify({prompt: data}), // Send prompt as JSON
             });
       
             if (res.ok) {
               const data = await res.json();
+              console.log("REturned Data")
               console.log(data)
-
               return data
             } else {
               console.error("API call failed:", await res.json());
@@ -37,29 +46,6 @@ function CustomForm({Tab}: {Tab:string}) {
           } finally {
             //setLoading(false);
         }
-
-        //     model: "claude-3-5-sonnet-20241022",
-        //     max_tokens: 1000,
-        //     temperature: 0,
-        //     system: "Respond only with short poems.",
-        //     messages: [
-        //         {
-        //         "role": "user",
-        //         "content": [
-        //             {
-        //             "type": "text",
-        //             "text": "Why is the ocean salty?"
-        //             }
-        //         ]
-        //         }
-        //     ]
-        //     });
-        //     console.log(result);
-            //model.generateContent(data);
-                    //console.log(result.response.text())
-
-        
-
 
     }
 
@@ -71,22 +57,77 @@ function CustomForm({Tab}: {Tab:string}) {
         
     }
 
-    const onSubmit=(e:any) => {
+    const onSubmit=async(e:any) => {
         e.preventDefault()
         console.log(FormData)
         console.log("hello")
-        //const res = await CallAPI(FormData["prompt"])
-        const res = "Yes I recieved the message"
-        setConvo((prevConversation) => [...prevConversation, { prompt: FormData, response: res }])
-        setData('')
+        if(ActiveModel){
+          const res = await CallAPI(e.target.prompt.value)
+          console.log("response: ", res)
+          setConvo((prevConversation) => [...prevConversation, { prompt: FormData, response: res.response }])
+          setData('')
+        }
+        else{
+          alert("A model wasn't properly selected")
+        }
+ 
+
         
 
 
 
         
     }
+  console.log("atc: " +ActiveModel)
   return (
     <div className='h-[90vh]'>
+        <div className='flex flex-wrap'>
+        {models.map((model:string, index:number) => {
+          // Only set ActiveModel for the first item (index === 0)
+          if (index === 0 && !ActiveModel) {
+            setActiveModel(model); // Set the first model as the active one
+          }
+
+          return (
+            <div key={index}>
+              <input
+                className='peer hidden'
+                type="radio"
+                id={`tab-${model}`}
+                name="mytabs"
+                checked={ActiveModel === model}
+                onChange={() => setActiveModel(model)}
+              />
+              <label htmlFor={`tab-${model}`} className="bg-gray-300 peer-checked:bg-green-500 px-4 py-2 rounded cursor-pointer">
+                {model}
+              </label>
+            </div>
+          );
+        })}
+          {/* {models.map((model: string, index:number) => (
+              <div key={index}>
+                <input
+                  className='peer hidden'
+                  type="radio"
+                  id={`tab-${model}`} // Unique ID for each input
+                  name="mytabs"
+                   defaultChecked={index === 0} // Check the first radio button by default
+                  //checked={ActiveModel === model}
+                  onChange={() => {setActiveModel(model)}}
+                />
+                <label className="bg-gray-300 peer-checked:bg-green-500 px-4 py-2 rounded cursor-pointer" htmlFor={`tab-${model}`}>{model}</label>
+ 
+              </div>
+
+              if(index == 0){
+                setActiveModel(model);
+              }
+             
+              
+
+          ))} */}
+
+        </div>
         <div>
             <Conversation
             conversation={convo}/>
